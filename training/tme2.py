@@ -257,9 +257,29 @@ def protocole(n) :
 #protocole(3)
 
 def performance(nombre):
-    
-    the_set = createGaussianDataset(np.array([1,1]),np.array([[1,0],[0,1]]),np.array([-1,-1]),np.array([[1,0],[0,1]]),100)
-    the_set_train = createGaussianDataset(np.array([1,1]),np.array([[1,0],[0,1]]),np.array([-1,-1]),np.array([[1,0],[0,1]]),100)
+    x = []
+    y1 = []
+    y2 = []
     for i in range(nombre) :
-        knn = ClassifierKNN(2, n)
-        knn.train(the_set_train)
+    	the_set = createGaussianDataset(np.array([1,1]),np.array([[1,0],[0,1]]),np.array([-1,-1]),np.array([[1,0],[0,1]]),100)
+    	the_set_train = createGaussianDataset(np.array([1,1]),np.array([[1,0],[0,1]]),np.array([-1,-1]),np.array([[1,0],[0,1]]),100)
+    	print("KN"+str(nombre))
+    	knn = ClassifierKNN(2, nombre)
+    	knn.train(the_set_train)
+    	train = knn.accuracy(the_set_train)
+    	test = knn.accuracy(the_set)
+    	print("accuracy on train "+str(train))
+    	print("accuracy on test "+str(test))
+    	x.append(i)
+    	y1.append(train)
+    	y2.append(test)
+    	print("\n")
+    plt.plot(x, y1, label='on train')
+    plt.plot(x, y2, label='on test')
+    plt.xlabel('N')
+    plt.ylabel('Acuracy')
+    plt.title('performances accuracy')
+    plt.legend()
+    plt.show()
+
+performance(5)
