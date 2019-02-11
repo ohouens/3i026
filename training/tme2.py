@@ -196,14 +196,14 @@ def plot_frontiere(set,classifier,step=10):
     plt.contourf(x1grid,x2grid,res,colors=["red","cyan"],levels=[-1000,0,1000])
 
 
-plot_frontiere(the_set, un_classifieur)
+#plot_frontiere(the_set, un_classifieur)
 #plot2DSet(the_set)
 
 
 
 classifieur_random=ClassifierRandom(2)
 
-plot_frontiere(the_set,classifieur_random)
+#plot_frontiere(the_set,classifieur_random)
 #plot2DSet(the_set)
 
 class ClassifierKNN(Classifier):
@@ -241,7 +241,7 @@ class ClassifierKNN(Classifier):
 knn = ClassifierKNN(2,1)
 knn.train(the_set)
 
-plot_frontiere(the_set,knn,20)
+#plot_frontiere(the_set,knn,20)
 #plot2DSet(the_set)
 
 def protocole(n) :
@@ -257,14 +257,14 @@ def protocole(n) :
 #protocole(3)
 
 def performance(nombre):
+    the_set = createGaussianDataset(np.array([1,1]),np.array([[1,0],[0,1]]),np.array([-1,-1]),np.array([[1,0],[0,1]]),100)
+    the_set_train = createGaussianDataset(np.array([1,1]),np.array([[1,0],[0,1]]),np.array([-1,-1]),np.array([[1,0],[0,1]]),100)
     x = []
     y1 = []
     y2 = []
     for i in range(nombre) :
-    	the_set = createGaussianDataset(np.array([1,1]),np.array([[1,0],[0,1]]),np.array([-1,-1]),np.array([[1,0],[0,1]]),100)
-    	the_set_train = createGaussianDataset(np.array([1,1]),np.array([[1,0],[0,1]]),np.array([-1,-1]),np.array([[1,0],[0,1]]),100)
-    	print("KN"+str(nombre))
-    	knn = ClassifierKNN(2, nombre)
+    	print("KN"+str(i))
+    	knn = ClassifierKNN(2, i)
     	knn.train(the_set_train)
     	train = knn.accuracy(the_set_train)
     	test = knn.accuracy(the_set)
