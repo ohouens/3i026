@@ -54,7 +54,7 @@ class ClassifierLineaireRandom(Classifier):
     
     #TODO: A Compléter
     
-     def __init__(self, input_dimension):
+    def __init__(self, input_dimension):
         self.w = np.random.rand(1,input_dimension)
     
     def predict(self, x):
