@@ -97,3 +97,194 @@ class ClassifierKNN(Classifier):
     def train(self, labeledSet):
         self.labeledSet = labeledSet
 # ---------------------------
+
+
+class ClassifierPerceptronKernel(Classifier):
+    def __init__(self,dimension_kernel,learning_rate,kernel):
+        """ Argument:
+            - intput_dimension (int) : dimension d'entrée des exemples
+            - learning_rate :
+            Hypothèse : input_dimension > 0
+            """
+        ##TODO
+        self.e = learning_rate
+        self.w = np.random.rand(1, dimension_kernel)
+        self.dimension = dimension_kernel
+        self.kernel = kernel
+        self.loss = 0
+    
+    def predict(self,x):
+        """ rend la prediction sur x (-1 ou +1)
+            """
+        ##TODO
+        data = self.kernel.transform(x)
+        if(np.dot(self.w, data) > 0):
+            return 1
+        return -1
+    
+    def train(self,labeledSet):
+        """ Permet d'entrainer le modele sur l'ensemble donné
+            """
+        ##TODO
+        indice = np.arange(labeledSet.size())
+        temoin = np.random.permutation(indice)
+        for i in temoin:
+            data = self.kernel.transform(labeledSet.getX(i))
+            obtenu = self.predict(labeledSet.getX(i))
+            if(obtenu != labeledSet.getY(i)):
+                self.w = self.w + self.e*labeledSet.getY(i)*data
+            self.loss += (labeledSet.getY(i) - np.dot(self.w, data)) * (labeledSet.getY(i) - np.dot(self.w, data))
+        print(str(self.loss) +" loss")
+        self.loss = 0
+# ---------------------------
+
+class KernelPoly:
+    def transform(self,x):
+        ##TODO
+        y=np.asarray([1,x[0],x[1],x[0]*x[0],x[1]*x[1], x[0] * x[1] ])
+        return y
+# ---------------------------
+
+#Gradient stochastique
+
+class ClassifierGradientStochastique(Classifier):
+    def __init__(self,input_dimension,learning_rate):
+        """ Argument:
+            - intput_dimension (int) : dimension d'entrée des exemples
+            - learning_rate :
+            Hypothèse : input_dimension > 0
+            """
+        ##TODO
+        self.e = learning_rate
+        self.w = np.random.rand(1, input_dimension)
+        self.dimension = input_dimension
+    
+    def predict(self,x):
+        """ rend la prediction sur x (-1 ou +1)
+            """
+        ##TODO
+        if(np.dot(self.w, x) > 0):
+            return 1
+        return -1
+    
+    def train(self,labeledSet):
+        """ Permet d'entrainer le modele sur l'ensemble donné
+            """
+        ##TODO
+        indice = np.arange(labeledSet.size())
+        temoin = np.random.permutation(indice)
+        for i in temoin:
+            self.w = self.w + self.e*(labeledSet.getY(i) - np.dot(self.w,labeledSet.getX(i)))*labeledSet.getX(i)
+# ---------------------------
+#Gradient batch
+
+class ClassifierGradientBatch(Classifier):
+    def __init__(self,input_dimension,learning_rate):
+        """ Argument:
+            - intput_dimension (int) : dimension d'entrée des exemples
+            - learning_rate :
+            Hypothèse : input_dimension > 0
+            """
+        ##TODO
+        self.e = learning_rate
+        self.w = np.random.rand(1, input_dimension)
+        self.dimension = input_dimension
+        self.gradient = 0
+        self.loss = 0
+    
+    def predict(self,x):
+        """ rend la prediction sur x (-1 ou +1)
+            """
+        ##TODO
+        if(np.dot(self.w, x) > 0):
+            return 1
+        return -1
+    
+    def train(self,labeledSet):
+        """ Permet d'entrainer le modele sur l'ensemble donné
+            """
+        ##TODO
+        indice = np.arange(labeledSet.size())
+        temoin = np.random.permutation(indice)
+        for i in temoin:
+            self.gradient += (labeledSet.getY(i) - np.dot(self.w,labeledSet.getX(i)))*labeledSet.getX(i)
+            self.loss += (labeledSet.getY(i) - np.dot(self.w, labeledSet.getX(i))) * (labeledSet.getY(i) - np.dot(self.w, labeledSet.getX(i)))
+        self.w = self.w + self.e * self.gradient
+        print(str(self.loss)+" loss")
+        self.loss = 0
+# ---------------------------
+#Gradient stochastique kernel
+
+class ClassifierGradientStochastiqueKernel(Classifier):
+    def __init__(self,dimension_kernel,learning_rate,kernel):
+        """ Argument:
+            - intput_dimension (int) : dimension d'entrée des exemples
+            - learning_rate :
+            Hypothèse : input_dimension > 0
+            """
+        ##TODO
+        self.e = learning_rate
+        self.w = np.random.rand(1, dimension_kernel)
+        self.dimension = dimension_kernel
+        self.kernel = kernel
+    
+    def predict(self,x):
+        """ rend la prediction sur x (-1 ou +1)
+            """
+        ##TODO
+        data = self.kernel.transform(x)
+        if(np.dot(self.w, data) > 0):
+            return 1
+        return -1
+    
+    def train(self,labeledSet):
+        """ Permet d'entrainer le modele sur l'ensemble donné
+            """
+        ##TODO
+        indice = np.arange(labeledSet.size())
+        temoin = np.random.permutation(indice)
+        for i in temoin:
+            data = self.kernel.transform(labeledSet.getX(i))
+            self.w = self.w + self.e*(labeledSet.getY(i) - np.dot(self.w,data))*data
+
+# ---------------------------
+#Gradient batch kernel
+
+class ClassifierGradientBatchKernel(Classifier):
+    def __init__(self,dimension_kernel,learning_rate,kernel):
+        """ Argument:
+            - intput_dimension (int) : dimension d'entrée des exemples
+            - learning_rate :
+            Hypothèse : input_dimension > 0
+            """
+        ##TODO
+        self.e = learning_rate
+        self.w = np.random.rand(1, dimension_kernel)
+        self.dimension = dimension_kernel
+        self.kernel = kernel
+        self.gradient = 0
+        self.loss = 0
+    
+    def predict(self,x):
+        """ rend la prediction sur x (-1 ou +1)
+            """
+        ##TODO
+        data = self.kernel.transform(x)
+        if(np.dot(self.w, data) > 0):
+            return 1
+        return -1
+    
+    def train(self,labeledSet):
+        """ Permet d'entrainer le modele sur l'ensemble donné
+            """
+        ##TODO
+        indice = np.arange(labeledSet.size())
+        temoin = np.random.permutation(indice)
+        for i in temoin:
+            data = self.kernel.transform(labeledSet.getX(i))
+            self.gradient = (labeledSet.getY(i) - np.dot(self.w,data))*data
+            self.loss += (labeledSet.getY(i) - np.dot(self.w, data)) * (labeledSet.getY(i) - np.dot(self.w, data))
+        self.w = self.w + self.e * self.gradient
+        print(str(self.loss) + " loss")
+        self.loss = 0
+# ---------------------------
