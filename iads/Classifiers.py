@@ -122,7 +122,7 @@ class ClassifierPerceptronKernel(Classifier):
             return 1
         return -1
     
-    def train(self,labeledSet):
+    def train(self,labeledSet, show=False):
         """ Permet d'entrainer le modele sur l'ensemble donné
             """
         ##TODO
@@ -134,7 +134,8 @@ class ClassifierPerceptronKernel(Classifier):
             if(obtenu != labeledSet.getY(i)):
                 self.w = self.w + self.e*labeledSet.getY(i)*data
             self.loss += (labeledSet.getY(i) - np.dot(self.w, data)) * (labeledSet.getY(i) - np.dot(self.w, data))
-        print(str(self.loss) +" loss")
+	if(show):
+        	print(str(self.loss) +" loss")
         self.loss = 0
 # ---------------------------
 
