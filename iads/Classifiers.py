@@ -134,9 +134,9 @@ class ClassifierPerceptronKernel(Classifier):
             if(obtenu != labeledSet.getY(i)):
                 self.w = self.w + self.e*labeledSet.getY(i)*data
             self.loss += (labeledSet.getY(i) - np.dot(self.w, data)) * (labeledSet.getY(i) - np.dot(self.w, data))
-	if(show):
-        	print(str(self.loss) +" loss")
-        self.loss = 0
+            if(show):
+                print(str(self.loss) +" loss")
+            self.loss = 0
 # ---------------------------
 
 class KernelPoly:
@@ -193,7 +193,7 @@ class ClassifierGradientBatch(Classifier):
         self.gradient = 0
         self.loss = 0
     
-    def predict(self,x):
+    def predict(self,x, show=False):
         """ rend la prediction sur x (-1 ou +1)
             """
         ##TODO
@@ -201,7 +201,7 @@ class ClassifierGradientBatch(Classifier):
             return 1
         return -1
     
-    def train(self,labeledSet):
+    def train(self,labeledSet, show=False):
         """ Permet d'entrainer le modele sur l'ensemble donné
             """
         ##TODO
@@ -211,7 +211,8 @@ class ClassifierGradientBatch(Classifier):
             self.gradient += (labeledSet.getY(i) - np.dot(self.w,labeledSet.getX(i)))*labeledSet.getX(i)
             self.loss += (labeledSet.getY(i) - np.dot(self.w, labeledSet.getX(i))) * (labeledSet.getY(i) - np.dot(self.w, labeledSet.getX(i)))
         self.w = self.w + self.e * self.gradient
-        print(str(self.loss)+" loss")
+        if(show):
+            print(str(self.loss) +" loss")
         self.loss = 0
 # ---------------------------
 #Gradient stochastique kernel
@@ -275,7 +276,7 @@ class ClassifierGradientBatchKernel(Classifier):
             return 1
         return -1
     
-    def train(self,labeledSet):
+    def train(self,labeledSet, show=False):
         """ Permet d'entrainer le modele sur l'ensemble donné
             """
         ##TODO
@@ -286,6 +287,7 @@ class ClassifierGradientBatchKernel(Classifier):
             self.gradient = (labeledSet.getY(i) - np.dot(self.w,data))*data
             self.loss += (labeledSet.getY(i) - np.dot(self.w, data)) * (labeledSet.getY(i) - np.dot(self.w, data))
         self.w = self.w + self.e * self.gradient
-        print(str(self.loss) + " loss")
+        if(show):
+            print(str(self.loss) +" loss")
         self.loss = 0
 # ---------------------------
