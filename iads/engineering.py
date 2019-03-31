@@ -12,9 +12,6 @@ class Engineering():
         self.name = name+"Engineering"
         print(self.name, "init in process")
 
-    def reverse(self):
-        raise NotImplementedError("Please Implement this method")
-
     def toDataFrame(self):
         raise NotImplementedError("Please Implement this method")
 
@@ -27,7 +24,7 @@ class ActorsEngineering(Engineering):
         self.casting = {}
         self.playedMovies = {}
         self.playedMoviesReversed = {}
-        self.averageIncomes = {}
+        self.averageRating = {}
         self.favoriteGenres = {}
         #on initialise actors, actorsReversed et playedMovies
         for lista in base:
@@ -55,18 +52,54 @@ class ActorsEngineering(Engineering):
         pass
 
 
-class MoviesEngineering():
-    def __init__(self, base):
-        super().__init__("Movies")
+class GenresEngineering(Engineering):
+    def __init__(self, base, complement):
+        super().__init__("Genres")
         self.genres = {}
-        for mtg in base['genres']:
-            g = mtg.split('|')
-            for a in g:
-                self.genres.add(a)
+        self.nbFilms = {}
+        self.averageRating = {}
+        self.ratingCount = {}
+        for i in range(len(base)):
+            genre = base.iloc[i]['genres'].split('|')
+            film = self.linkFilm(i, base.iloc[i]['movieId'], complement)
+            for g in genre:
+                #on initialise les genres possibles
+                if g in self.genres.keys():
+                    self.genres[g].append(base.iloc[i]['movieId'])
+                else:
+                    self.genres[g] = [base.iloc[i]['movieId']]
+                #on compte les tailles
+                if g in self.nbFilms.keys():
+                    self.nbFilms[g] += 1
+                else:
+                    self.nbFilms[g] = 1
+                #on ajoute les nombres de votes
+                if g in self.ratingCount.keys():
+                    self.ratingCount[g] += film['vote_count']
+                else:
+                    self.ratingCount[g] = film['vote_count']
+                #on ajoute les notes moyennes
+                if g in self.averageRating.keys():
+                    self.averageRating[g] += film['vote_average']*film['vote_count']
+                else:
+                    self.averageRating[g] = film['vote_average']*film['vote_count']
+        #on effectue la moyenne des note moyennes(cela n'a pas de sens mais on fait avec ce que l'on a)
+        for k in self.genres.keys():
+            self.averageRating[k] /= self.ratingCount[k]
         print(self.name,  "init successful")
 
-    def reverse(self):
-        pass
+    def linkFilm(self, i, movieId, complement):
+        links, films = complement
+        inter = int(links.loc[links["movieId"] == movieId]["tmdbId"])
+        if(films[i]['id'] == inter):
+            return films[i]
+        else:
+            #print("miss")
+            for film in films:
+                if film['id'] == inter:
+                    return film
+            print("FAIL")
+            exit(0)
 
     def toDataFrame(self, column=[]):
         pass
