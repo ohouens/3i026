@@ -102,4 +102,14 @@ class GenresEngineering(Engineering):
             exit(0)
 
     def toDataFrame(self, column=[]):
-        pass
+        df = {}
+        df["name"] = []
+        df["quantite"] = []
+        df["note"] = []
+        df["engagement"] = []
+        for k in self.genres.keys():
+            df["name"].append(k)
+            df["quantite"].append(self.nbFilms[k])
+            df["note"].append(self.averageRating[k])
+            df["engagement"].append(self.ratingCount[k])
+        return pd.DataFrame.from_dict(df)
