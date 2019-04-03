@@ -37,17 +37,17 @@ def plot_frontiere(set,classifier,step=10):
     mmin=set.x.min(0)
     x1grid,x2grid=np.meshgrid(np.linspace(mmin[0],mmax[0],step),np.linspace(mmin[1],mmax[1],step))
     grid=np.hstack((x1grid.reshape(x1grid.size,1),x2grid.reshape(x2grid.size,1)))
-    
+
     # calcul de la prediction pour chaque point de la grille
     res=np.array([classifier.predict(grid[i,:]) for i in range(len(grid)) ])
     res=res.reshape(x1grid.shape)
     # tracer des frontieres
     plt.contourf(x1grid,x2grid,res,colors=["red","cyan"],levels=[-1000,0,1000])
-    
-# ------------------------ 
+
+# ------------------------
 
 def createGaussianDataset(positive_center, positive_sigma, negative_center, negative_sigma, nb_points):
-    """ 
+    """
         rend un LabeledSet 2D généré aléatoirement.
         Arguments:
         - positive_center (vecteur taille 2): centre de la gaussienne des points positifs
@@ -57,14 +57,10 @@ def createGaussianDataset(positive_center, positive_sigma, negative_center, nega
         - nb_points (int):  nombre de points de chaque classe à générer
     """
     #TODO: A Compléter
- 	x, y = np.random.multivariate_normal(positive_center, positive_sigma, nb_points).T
-   	a, b = np.random.multivariate_normal(negative_center, negative_sigma, nb_points).T
-    	label = LabeledSet(2)
-    	for i in range(len(a)):
-        	label.addExample(np.array([x[i], y[i]]), 1)
-        	label.addExample(np.array([a[i], b[i]]),-1)
-    	return label
-    
-    raise NotImplementedError("Please Implement this method")
-    
-    
+    x, y = np.random.multivariate_normal(positive_center, positive_sigma, nb_points).T
+    a, b = np.random.multivariate_normal(negative_center, negative_sigma, nb_points).T
+    label = LabeledSet(2)
+    for i in range(len(a)):
+    	label.addExample(np.array([x[i], y[i]]), 1)
+    	label.addExample(np.array([a[i], b[i]]),-1)
+    return label
