@@ -59,6 +59,7 @@ class GenresEngineering(Engineering):
         self.nbFilms = {}
         self.averageRating = {}
         self.ratingCount = {}
+        indice = base.index.values.tolist()
         for i in range(len(base)):
             genre = base.iloc[i]['genres'].split('|')
             film = self.linkFilm(i, base.iloc[i]['movieId'], complement)
@@ -91,6 +92,12 @@ class GenresEngineering(Engineering):
     def linkFilm(self, i, movieId, complement):
         links, films = complement
         inter = int(links.loc[links["movieId"] == movieId]["tmdbId"])
+        """
+        for i in indice:
+            if films[i]['id'] == inter:
+                indice.remove(i)
+                return films[i]
+        """
         if(films[i]['id'] == inter):
             return films[i]
         else:
@@ -100,16 +107,23 @@ class GenresEngineering(Engineering):
                     return film
             print("FAIL")
             exit(0)
+        print("FAIL", movieId, len(indice))
+        exit(0)
 
     def toDataFrame(self, column=[]):
         df = {}
-        df["name"] = []
+        name = []
         df["quantite"] = []
-        df["note"] = []
         df["engagement"] = []
+        classa = []
         for k in self.genres.keys():
-            df["name"].append(k)
+            target = -1
+            if self.averageRating[k] > 7: #mediane vu à l'oeil, faire une fonction qui la calcul
+                target = 1
+            name.append(k)
             df["quantite"].append(self.nbFilms[k])
-            df["note"].append(self.averageRating[k])
             df["engagement"].append(self.ratingCount[k])
-        return pd.DataFrame.from_dict(df)
+            classa.append(target)
+        df = normalisation(pd.DataFrame(df, index=name))
+        df["class"] = classa
+        return df
