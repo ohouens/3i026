@@ -7,6 +7,17 @@ import matplotlib.pyplot as plt
 def normalisation(df):
     return (df-df.min())/(df.max()-df.min())
 
+def toTarget(list, method="median"):
+    final = []
+    if(method=="median"):
+        median = np.median([list])
+        for inter in list:
+            target = -1
+            if inter > median: #mediane vu à l'oeil, faire une fonction qui la calcul
+                target = 1
+            final.append(target)
+    return final
+
 class Engineering():
     def __init__(self, name):
         self.name = name+"Engineering"
@@ -48,7 +59,7 @@ class ActorsEngineering(Engineering):
             else:
                 self.playedMoviesReversed[v] = [k]
 
-    def toDataFrame(self, column=[]):
+    def toDataFrame(self):
         pass
 
 
@@ -110,20 +121,33 @@ class GenresEngineering(Engineering):
         print("FAIL", movieId, len(indice))
         exit(0)
 
-    def toDataFrame(self, column=[]):
+    def toDataFrame(self):
         df = {}
         name = []
         df["quantite"] = []
         df["engagement"] = []
-        classa = []
+        target = []
+        median = np.median([list(self.averageRating.values())])
+        print("median:", median)
         for k in self.genres.keys():
-            target = -1
-            if self.averageRating[k] > 7: #mediane vu à l'oeil, faire une fonction qui la calcul
-                target = 1
+            temoin = -1
+            if self.averageRating[k] > median: #mediane vu à l'oeil, faire une fonction qui la calcul
+                temoin = 1
             name.append(k)
             df["quantite"].append(self.nbFilms[k])
             df["engagement"].append(self.ratingCount[k])
-            classa.append(target)
+            target.append(temoin)
         df = normalisation(pd.DataFrame(df, index=name))
-        df["class"] = classa
+        df["class"] = target
         return df
+
+class MoviesEngineering(Engineering):
+    def __init__(self, base, complement):
+        super().__init__("Movies")
+        self.movies = {}
+        self.mainActors = {}
+        self.languages = {}
+        self.popularity = {}
+
+    def toDataFrame(self, column=[]):
+        pass
