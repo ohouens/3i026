@@ -7,24 +7,33 @@ import matplotlib.pyplot as plt
 def normalisation(df):
     return (df-df.min())/(df.max()-df.min())
 
-def toTarget(list, method="median"):
+def toTarget(list, method):
     final = []
     if(method=="median"):
-        median = np.median([list])
-        for inter in list:
-            target = -1
-            if inter > median: #mediane vu à l'oeil, faire une fonction qui la calcul
-                target = 1
-            final.append(target)
+        temoin = np.median([list])
+    elif(method=="mean"):
+        temoin = np.mean([list])
+    else:
+        temoin = 0
+    for inter in list:
+        target = -1
+        if inter > temoin:
+            target = 1
+        final.append(target)
     return final
 
 class Engineering():
     def __init__(self, name):
         self.name = name+"Engineering"
+        self.df = {}
+        self.index = []
+        self.target = []
         print(self.name, "init in process")
 
-    def toDataFrame(self):
-        raise NotImplementedError("Please Implement this method")
+    def toDataFrame(self, method="median"):
+        df = normalisation(pd.DataFrame(self.df, index=self.index))
+        df["target"] = toTarget(self.target, method)
+        return df
 
 
 class ActorsEngineering(Engineering):
@@ -59,45 +68,50 @@ class ActorsEngineering(Engineering):
             else:
                 self.playedMoviesReversed[v] = [k]
 
-    def toDataFrame(self):
-        pass
-
 
 class GenresEngineering(Engineering):
     def __init__(self, base, complement):
         super().__init__("Genres")
-        self.genres = {}
-        self.nbFilms = {}
-        self.averageRating = {}
-        self.ratingCount = {}
+        genres = {}
+        nbFilms = {}
+        averageRating = {}
+        ratingCount = {}
         indice = base.index.values.tolist()
         for i in range(len(base)):
             genre = base.iloc[i]['genres'].split('|')
             film = self.linkFilm(i, base.iloc[i]['movieId'], complement)
             for g in genre:
                 #on initialise les genres possibles
-                if g in self.genres.keys():
-                    self.genres[g].append(base.iloc[i]['movieId'])
+                if g in genres.keys():
+                    genres[g].append(base.iloc[i]['movieId'])
                 else:
-                    self.genres[g] = [base.iloc[i]['movieId']]
+                    genres[g] = [base.iloc[i]['movieId']]
                 #on compte les tailles
-                if g in self.nbFilms.keys():
-                    self.nbFilms[g] += 1
+                if g in nbFilms.keys():
+                    nbFilms[g] += 1
                 else:
-                    self.nbFilms[g] = 1
+                    nbFilms[g] = 1
                 #on ajoute les nombres de votes
-                if g in self.ratingCount.keys():
-                    self.ratingCount[g] += film['vote_count']
+                if g in ratingCount.keys():
+                    ratingCount[g] += film['vote_count']
                 else:
-                    self.ratingCount[g] = film['vote_count']
+                    ratingCount[g] = film['vote_count']
                 #on ajoute les notes moyennes
-                if g in self.averageRating.keys():
-                    self.averageRating[g] += film['vote_average']*film['vote_count']
+                if g in averageRating.keys():
+                    averageRating[g] += film['vote_average']*film['vote_count']
                 else:
-                    self.averageRating[g] = film['vote_average']*film['vote_count']
+                    averageRating[g] = film['vote_average']*film['vote_count']
         #on effectue la moyenne des note moyennes(cela n'a pas de sens mais on fait avec ce que l'on a)
-        for k in self.genres.keys():
-            self.averageRating[k] /= self.ratingCount[k]
+        for k in genres.keys():
+            averageRating[k] /= ratingCount[k]
+        #on rempli le dictionnaire
+        self.df["quantite"] = []
+        self.df["engagement"] = []
+        for k in genres.keys():
+            self.target.append(averageRating[k])
+            self.index.append(k)
+            self.df["quantite"].append(nbFilms[k])
+            self.df["engagement"].append(ratingCount[k])
         print(self.name,  "init successful")
 
     def linkFilm(self, i, movieId, complement):
@@ -121,25 +135,6 @@ class GenresEngineering(Engineering):
         print("FAIL", movieId, len(indice))
         exit(0)
 
-    def toDataFrame(self):
-        df = {}
-        name = []
-        df["quantite"] = []
-        df["engagement"] = []
-        target = []
-        median = np.median([list(self.averageRating.values())])
-        print("median:", median)
-        for k in self.genres.keys():
-            temoin = -1
-            if self.averageRating[k] > median: #mediane vu à l'oeil, faire une fonction qui la calcul
-                temoin = 1
-            name.append(k)
-            df["quantite"].append(self.nbFilms[k])
-            df["engagement"].append(self.ratingCount[k])
-            target.append(temoin)
-        df = normalisation(pd.DataFrame(df, index=name))
-        df["class"] = target
-        return df
 
 class MoviesEngineering(Engineering):
     def __init__(self, base, complement):
@@ -148,6 +143,4 @@ class MoviesEngineering(Engineering):
         self.mainActors = {}
         self.languages = {}
         self.popularity = {}
-
-    def toDataFrame(self, column=[]):
-        pass
+        print(name,  "init successful")
