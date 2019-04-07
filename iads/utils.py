@@ -37,17 +37,17 @@ def plot_frontiere(set,classifier,step=50):
     mmin=set.x.min(0)
     x1grid,x2grid=np.meshgrid(np.linspace(mmin[0],mmax[0],step),np.linspace(mmin[1],mmax[1],step))
     grid=np.hstack((x1grid.reshape(x1grid.size,1),x2grid.reshape(x2grid.size,1)))
-    
+
     # calcul de la prediction pour chaque point de la grille
     res=np.array([classifier.predict(grid[i,:]) for i in range(len(grid)) ])
     res=res.reshape(x1grid.shape)
     # tracer des frontieres
     plt.contourf(x1grid,x2grid,res,colors=["red","cyan"],levels=[-1000,0,1000])
-    
-# ------------------------ 
+
+# ------------------------
 
 def createGaussianDataset(positive_center, positive_sigma, negative_center, negative_sigma, nb_points):
-    """ 
+    """
         rend un LabeledSet 2D généré aléatoirement.
         Arguments:
         - positive_center (vecteur taille 2): centre de la gaussienne des points positifs
@@ -66,18 +66,18 @@ def createGaussianDataset(positive_center, positive_sigma, negative_center, nega
     return label
 
     raise NotImplementedError("Please Implement this method")
-    
+
 # Exemple d'utilisation de utils
 
 the_set = createGaussianDataset(np.array([1,1]),np.array([[1,0],[0,1]]),np.array([-1,-1]),np.array([[1,0],[0,1]]),100)
 
 
 
-def super_entrainement(n, label, perceptron, show=False) :
+def super_entrainement(n, label, perceptron, pourcentage=60, show=False) :
     x = []
     y = []
     for i in range(n) :
-        train, test = split(label)
+        train, test = split(label, pourcentage)
         perceptron.train(train)
         train = perceptron.accuracy(test)
         if(show):
@@ -94,7 +94,7 @@ def super_entrainement(n, label, perceptron, show=False) :
     plot_frontiere(test,perceptron)
     plot2DSet(test)
 
-    
+
     # Fonction pour afficher le LabeledSet
 def affiche_base(LS):
     """ LabeledSet
@@ -112,14 +112,14 @@ def split(label,pourcentage=60) :
 
     label_train = ls.LabeledSet(label.getInputDimension())
     label_test = ls.LabeledSet(label.getInputDimension())
-    
+
     indice = np.arange(label.size())
     temoin = np.random.permutation(indice)
-    
+
     for i in range (temoin.size) :
         if (i < pourcentage*len(temoin)/100):
             label_train.addExample(label.getX(temoin[i]), label.getY(temoin[i]))
-        else : 
+        else :
             label_test.addExample(label.getX(temoin[i]), label.getY(temoin[i]))
 
     return (label_train, label_test)
