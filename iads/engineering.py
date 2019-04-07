@@ -1,4 +1,5 @@
 import math
+import copy
 import random
 import numpy as np
 import pandas as pd
@@ -46,9 +47,17 @@ class Engineering():
         print(self.name, "init in process")
 
     def toDataFrame(self, method="median"):
-        df = normalisation(pd.DataFrame(self.df, index=self.index))
-        df["target"] = toTarget(self.target, method)
-        return df
+        stack = {}
+        cp = copy.deepcopy(self.df)
+        for k,v in self.df.items():
+            if not (isinstance(v[0], int) or isinstance(v[0], float)):
+                stack[k] = v
+                del cp[k]
+        result = normalisation(pd.DataFrame(cp, index=self.index))
+        for k, v in stack.items():
+            result[k] = v
+        result["target"] = toTarget(self.target, method)
+        return result
 
 
 class UtilsEngineering(Engineering):
@@ -57,6 +66,8 @@ class UtilsEngineering(Engineering):
         self.actors = {}
         self.actorsReversed = {}
         self.actorsPlayedMovies = {}
+        self.actorsMeanMovies = {}
+        self.plays = {}
         #introduire complements
         acteurs = complement
         #operation de base 1
@@ -80,6 +91,34 @@ class UtilsEngineering(Engineering):
                 for id in desc_film["genre_ids"] :
                     genre = genres_tmdb_dict[id]
                     self.actorsPlayedMovies[actorName][genre] += 1
+        #operation de base 3
+        for i_film in range(len(base)):
+            name = base[i_film]["original_title"]
+            self.plays[name] = []
+            for a in acteurs[i_film] :
+                self.plays[name].append(a["name"])
+        #operation de base 4
+        ke_act = self.actors.keys()
+        ke_gen = genres_tmdb_dict.keys()
+        for i in ke_act :
+            self.actorsMeanMovies[i] = dict()
+            for k in ke_gen :
+                self.actorsMeanMovies[i][genres_tmdb_dict[k]] = 0
+            self.actorsMeanMovies[i]["Total"] = 0
+        for i_film in range(len(base)) :
+            desc_film = base[i_film]
+            vote = desc_film["vote_average"]
+            for act in range(len(acteurs[i_film])) :
+                actor_name = acteurs[i_film][act]["name"]
+                self.actorsMeanMovies[actor_name]["Total"] += vote
+                for id in desc_film["genre_ids"] :
+                    genre = genres_tmdb_dict[id]
+                    self.actorsMeanMovies[actor_name][genre] += vote
+        ke_gen = list(genres_tmdb_dict_inv.keys())
+        for act in ke_act :
+            for k in ke_gen :
+                if(self.actorsMeanMovies[act][k] > 0):
+                    self.actorsMeanMovies[act][k] = (self.actorsMeanMovies[act][k] / self.actorsPlayedMovies[act][k])
         print(self.name, "init successful")
 
     def toDataFrame(self, method):
@@ -154,14 +193,14 @@ class MoviesEngineering(Engineering):
         self.df["original_language"] = []
         self.df["popularity"] = []
         #on introduit les complements
-        plays, moy_act_films = complement
+        plays, actorsMeanMovies = complement
         #on effectue les operations de Base
         for i in range(len(base)):
             title = base[i]["original_title"]
             self.df["vote_count"].append(base[i]["vote_count"])
             acteurs = plays[title]
             acteurs = acteurs[0:5]
-            genres_id = films[i]["genre_ids"]
+            genres_id = base[i]["genre_ids"]
             n = 0
             total = 0
             genres = []
@@ -169,7 +208,7 @@ class MoviesEngineering(Engineering):
                 genres.append(genres_tmdb_dict[g])
             for g in genres:
                 for act in acteurs:
-                    n += moy_act_films[act][g]
+                    n += actorsMeanMovies[act][g]
                     total += 1
             if total == 0:
                 self.df["moy_main_actors"].append(0)
