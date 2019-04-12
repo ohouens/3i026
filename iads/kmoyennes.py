@@ -26,7 +26,7 @@ import random
 # ************************* Recopier ici la fonction normalisation()
 def normalisation(DF):
     """ DataFrame -> DataFrame
-        rend le dataframe obtenu par normalisation des données selon 
+        rend le dataframe obtenu par normalisation des données selon
              la méthode vue en cours 8.
     """
     return (DF-DF.min())/(DF.max()-DF.min())
@@ -155,13 +155,13 @@ def kmoyennes(k, df, epsilon, iter_max):
     mat = affecte_cluster(df, cen_test)
     j = inertie_globale(df, mat)
     new_cen = nouveaux_centroides(df,mat)
-    
+
     mat2= affecte_cluster(df, new_cen)
     new_cent2 = nouveaux_centroides(df, mat2)
     j2 = inertie_globale(df, mat2)
-    
+
     i = 2
-    while((abs(j2 - j)) and (i<= iter_max)) :
+    while((abs(j2 - j)) > epsilon and (i<= iter_max)) :
           j = j2
           cen_test = new_cen
           mat = mat2
@@ -175,7 +175,7 @@ def kmoyennes(k, df, epsilon, iter_max):
 # ************************* Recopier ici la fonction affiche_resultat()
 def affiche_resultat(df,les_centres,mat):
     """ DataFrame **2 * dict[int,list[int]] -> None
-    """    
+    """
     # Remarque: pour les couleurs d'affichage des points, quelques exemples:
     # couleurs =['darkviolet', 'darkgreen', 'orange', 'deeppink', 'slateblue', 'orangered','y', 'g', 'b']
     # voir aussi (google): noms des couleurs dans matplolib
