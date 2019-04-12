@@ -46,7 +46,9 @@ class Engineering():
         self.target = []
         print(self.name, "init in process")
 
-    def toDataFrame(self, method="median"):
+    def toDataFrame(self, method="median", axis=''):
+        if axis != '':
+            self.target = self.df[axis]
         stack = {}
         cp = copy.deepcopy(self.df)
         for k,v in self.df.items():
@@ -68,6 +70,7 @@ class UtilsEngineering(Engineering):
         self.actorsPlayedMovies = {}
         self.actorsMeanMovies = {}
         self.plays = {}
+        self.languages = {}
         #introduire complements
         acteurs = complement
         #operation de base 1
@@ -115,10 +118,20 @@ class UtilsEngineering(Engineering):
                     genre = genres_tmdb_dict[id]
                     self.actorsMeanMovies[actor_name][genre] += vote
         ke_gen = list(genres_tmdb_dict_inv.keys())
+        ke_gen.append("Total")
         for act in ke_act :
             for k in ke_gen :
                 if(self.actorsMeanMovies[act][k] > 0):
                     self.actorsMeanMovies[act][k] = (self.actorsMeanMovies[act][k] / self.actorsPlayedMovies[act][k])
+        #operation de base 5
+        language = []
+        cpt = 0
+        for fi in base :
+            la = fi["original_language"]
+            if la not in language :
+                language.append(la)
+                self.languages[la] = cpt
+                cpt +=1
         print(self.name, "init successful")
 
     def toDataFrame(self, method):
@@ -189,11 +202,11 @@ class MoviesEngineering(Engineering):
     def __init__(self, base, complement):
         super().__init__("Movies")
         self.df["vote_count"] = []
-        self.df["moy_main_actors"] = []
+        self.df["mean_main_actors"] = []
         self.df["original_language"] = []
         self.df["popularity"] = []
         #on introduit les complements
-        plays, actorsMeanMovies = complement
+        plays, actorsMeanMovies, languages = complement
         #on effectue les operations de Base
         for i in range(len(base)):
             title = base[i]["original_title"]
@@ -211,10 +224,12 @@ class MoviesEngineering(Engineering):
                     n += actorsMeanMovies[act][g]
                     total += 1
             if total == 0:
-                self.df["moy_main_actors"].append(0)
+                self.df["mean_main_actors"].append(0)
             else:
-                self.df["moy_main_actors"].append(n/total)
-            self.df["original_language"].append(base[i]["original_language"])
+                self.df["mean_main_actors"].append(n/total)
+            la = base[i]["original_language"]
+            nbr = languages[la] / len(languages)
+            self.df["original_language"].append(nbr)
             if "popularity" not in base[i].keys():
                 self.df["popularity"].append(0)
             else:
