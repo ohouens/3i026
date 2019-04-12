@@ -51,7 +51,7 @@ def fusionne(chaine, partition) :
         for j in ke :
             if i != j :
                 d = dist_groupes(chaine,partition[i], partition[j])
-                if mini > d :
+                if mini >= d :
                     mini = d
                     cle1 = i
                     cle2 = j
