@@ -43,14 +43,17 @@ class Engineering():
         self.name = name+"Engineering"
         self.df = {}
         self.index = []
-        self.target = []
         print(self.name, "init in process")
 
     def toDataFrame(self, method="median", axis=''):
-        if axis != '':
-            self.target = self.df[axis]
-        stack = {}
         cp = copy.deepcopy(self.df)
+        if axis == '':
+            temoin = list(cp)[-1]
+        else:
+            temoin = axis
+        target = cp[temoin]
+        del cp[temoin]
+        stack = {}
         for k,v in self.df.items():
             if not (isinstance(v[0], int) or isinstance(v[0], float)):
                 stack[k] = v
@@ -58,7 +61,7 @@ class Engineering():
         result = normalisation(pd.DataFrame(cp, index=self.index))
         for k, v in stack.items():
             result[k] = v
-        result["target"] = toTarget(self.target, method)
+        result["target"] = toTarget(target, method)
         return result
 
 
@@ -175,11 +178,12 @@ class GenresEngineering(Engineering):
         #on rempli le dictionnaire
         self.df["quantite"] = []
         self.df["engagement"] = []
+        self.df["note"] = []
         for k in genres.keys():
-            self.target.append(averageRating[k])
             self.index.append(k)
             self.df["quantite"].append(nbFilms[k])
             self.df["engagement"].append(ratingCount[k])
+            self.df["note"].append(averageRating[k])
         print(self.name,  "init successful")
 
     def linkFilm(self, i, movieId, complement):
@@ -205,6 +209,7 @@ class MoviesEngineering(Engineering):
         self.df["mean_main_actors"] = []
         self.df["original_language"] = []
         self.df["popularity"] = []
+        self.df["note"] = []
         #on introduit les complements
         plays, actorsMeanMovies, languages = complement
         #on effectue les operations de Base
@@ -234,6 +239,6 @@ class MoviesEngineering(Engineering):
                 self.df["popularity"].append(0)
             else:
                 self.df["popularity"].append(base[i]["popularity"])
-            self.target.append(base[i]["vote_average"])
+            self.df["note"].append(base[i]["vote_average"])
             self.index.append(base[i]["title"])
         print(self.name,  "init successful")
