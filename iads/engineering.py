@@ -45,14 +45,15 @@ class Engineering():
         self.index = []
         print(self.name, "init in process")
 
-    def toDataFrame(self, method="median", axis=''):
+    def toDataFrame(self, method="median", axis='', cluster=False):
         cp = copy.deepcopy(self.df)
-        if axis == '':
-            temoin = list(cp)[-1]
-        else:
-            temoin = axis
-        target = cp[temoin]
-        del cp[temoin]
+        if not cluster:
+            if axis == '':
+                temoin = list(cp)[-1]
+            else:
+                temoin = axis
+            target = cp[temoin]
+            del cp[temoin]
         stack = {}
         for k,v in self.df.items():
             if not (isinstance(v[0], int) or isinstance(v[0], float)):
@@ -61,7 +62,8 @@ class Engineering():
         result = normalisation(pd.DataFrame(cp, index=self.index))
         for k, v in stack.items():
             result[k] = v
-        result["target"] = toTarget(target, method)
+        if not cluster:
+            result["target"] = toTarget(target, method)
         return result
 
 
@@ -201,6 +203,19 @@ class GenresEngineering(Engineering):
         print("FAIL", movieId, len(indice))
         exit(0)
 
+class GenresClusterEngineering(Engineering):
+    def __init__(self, base):
+        super().__init__("GenreCluster")
+        for v in genres_tmdb_dict.values():
+            self.df[v] = []
+        for i in range(len(base)):
+            for k in self.df.keys():
+                if genres_tmdb_dict_inv[k] in base[i]["genre_ids"]:
+                    self.df[k].append(1)
+                else:
+                    self.df[k].append(0)
+            self.index.append(base[i]["original_title"])
+        print(self.name,  "init successful")
 
 class MoviesEngineering(Engineering):
     def __init__(self, base, complement):
