@@ -162,7 +162,7 @@ def split(label,pourcentage=60) :
 
 
 
-def bestClassifier(en, method, caracteristics,learningRate):
+def bestClassifier(en, method, caracteristics,learningRate, criterion):
     #Ordre : 0 = KNN, 1: Random, 2: PerceptronKernel, 3:Gradient Stochastique, 4:Stochastique Kernel
     nb = 0
     while(nb < 4 ):
@@ -177,48 +177,46 @@ def bestClassifier(en, method, caracteristics,learningRate):
         elif nb == 4 :
             classifier = "Classifier Stochastique Kernel"
         print("init",classifier,"\n\n")
+        df = en.toDataFrame(method,criterion)
+        lis = np.arange(len(df))
         for c1 in range(len(caracteristics)):
-            df = en.toDataFrame(method,caracteristics[c1])
-            lis = np.arange(len(df))
-            for c2 in range(c1+1,len(caracteristics)):
-                for c3 in range(c2+1, len(caracteristics)):
-                    une_base = ls.LabeledSet(2)
-                    ca1 = caracteristics[c2]
-                    ca2 = caracteristics[c3]
+            for c2 in range(c1+1, len(caracteristics)):
+                une_base = ls.LabeledSet(2)
+                ca1 = caracteristics[c1]
+                ca2 = caracteristics[c2]
 
-                    indice = np.random.permutation(lis)
-                    indice = indice[:1000]
-                    for i in indice:
-                        une_base.addExample([df.iloc[i][ca1], df.iloc[i][c2]]
-                                    , df.iloc[i]['target'])
-                    if nb ==  0 :
-                        cla = cl.ClassifierKNN(une_base.getInputDimension(),3)
-                    elif nb == 1 :
-                        k= cl.KernelPoly()
-                        cla= cl.ClassifierPerceptronKernel(6,learningRate,k)
-                    elif nb == 2 :
-                        cla = cl.ClassifierGradientStochastique(une_base.getInputDimension(), learningRate)
-                    elif nb == 3 :
-                        k = cl.KernelPoly()
-                        cla = cl.ClassifierGradientStochastiqueKernel(6, learningRate, k)
-                    if ( (c1 == 0) and (c2 == 1) and(nb == 0) ):
-                        maxi_mean, mini_vari = entrainement(25, une_base,cla, 40)
-                        minica1 = ca1
-                        minica2 = ca2
-                        criterion = caracteristics[c1]
-                        clamini = cla
+                indice = np.random.permutation(lis)
+                indice = indice[:1000]
+                for i in indice:
+                    une_base.addExample([df.iloc[i][ca1], df.iloc[i][c2]]
+                                , df.iloc[i]['target'])
+                if nb ==  0 :
+                    cla = cl.ClassifierKNN(une_base.getInputDimension(),3)
+                elif nb == 1 :
+                    k= cl.KernelPoly()
+                    cla= cl.ClassifierPerceptronKernel(6,learningRate,k)
+                elif nb == 2 :
+                    cla = cl.ClassifierGradientStochastique(une_base.getInputDimension(), learningRate)
+                elif nb == 3 :
+                    k = cl.KernelPoly()
+                    cla = cl.ClassifierGradientStochastiqueKernel(6, learningRate, k)
+                if ( (c1 == 0) and (c2 == 1) and(nb == 0) ):
+                    maxi_mean, mini_vari = entrainement(25, une_base,cla, 40)
+                    minica1 = ca1
+                    minica2 = ca2
+                    criterion = caracteristics[c1]
+                    clamini = cla
 
-                    mean, vari = entrainement(25, une_base,cla, 40)
-                    if ( (vari < mini_vari) and (mean> maxi_mean) ):
-                        mini_vari = vari
-                        maxi_mean = mean
-                        minica1 = ca1
-                        minica2 = ca2
-                        criterion = caracteristics[c1]
-                        clamini = cla
-                        classifiermini = classifier
-                    if( (c1==len(caracteristics) -1) and (c2 == len(caracteristics)-1) ):
-                        print("\n",classifier,"done")
+                mean, vari = entrainement(25, une_base,cla, 40)
+                if ( (vari < mini_vari) and (mean> maxi_mean) ):
+                    mini_vari = vari
+                    maxi_mean = mean
+                    minica1 = ca1
+                    minica2 = ca2
+                    clamini = cla
+                    classifiermini = classifier
+                if( (c1==len(caracteristics) -1) and (c2 == len(caracteristics)-1) ):
+                    print("\n",classifier,"done")
         print("\n\n",classifier,"done\n\n")
         nb+=1
     print("\n\nClassifier chosen",classifiermini,"Chosen criterion",criterion, "\nParams :", minica1, "and", minica2, "\nMean :",maxi_mean,
@@ -232,61 +230,66 @@ def bestClassifier(en, method, caracteristics,learningRate):
 
 
     
-def bestRegressor(en, method, caracteristics,learningRate):
-    #Ordre : 0 = ClassifierGradientBatch, 1 :
+def bestRegressor(eng, method, caracteristics, learningRate, criterion):
     nb = 0
-    while(nb < 2 ):
-        if nb ==  0 :
-            classifier = "ClassifierGradientBatch"
-        elif nb == 1:
-            classifier = "ClassifierGradientBatchKernel"
-        print("init",classifier,"\n\n")
+    while(nb < 2):
+        if nb == 0:
+            classifier = "Classifier Gradient Batch"
+        else :
+            classifier = "Classifier Gradient Batch Kernel"
+        print("init", classifier, "\n\n")
+        
+        df = eng.toDataFrame(method, criterion)
+        lis = np.arange(len(df))
         for c1 in range(len(caracteristics)):
-            df = en.toDataFrame(method,caracteristics[c1])
-            lis = np.arange(len(df))
-            for c2 in range(c1+1,len(caracteristics)):
-                for c3 in range(c2+1, len(caracteristics)):
-                    une_base = ls.LabeledSet(2)
-                    ca1 = caracteristics[c2]
-                    ca2 = caracteristics[c3]
-
-                    indice = np.random.permutation(lis)
-                    indice = indice[:1000]
-                    for i in indice:
-                        une_base.addExample([df.iloc[i][ca1], df.iloc[i][c2]]
-                                    , df.iloc[i]['target'])
-                    if nb ==  0 :
-                        cla = cl.ClassifierGradientBatch(une_base.getInputDimension(), learningRate)
-                    elif nb == 1 :
-                        k= cl.KernelPoly()
-                        cla= cl.ClassifierGradientBatchKernel(6,learningRate,k)
-                    if ( (c1 == 0) and (c2 == 1) and(nb == 0) ):
-                        maxi_mean, mini_vari = entrainement(25, une_base,cla, 40)
-                        minica1 = ca1
-                        minica2 = ca2
-                        criterion = caracteristics[c1]
-                        clamini = cla
-
-                    mean, vari = entrainement(25, une_base,cla, 40)
-                    if ( (vari < mini_vari) and (mean> maxi_mean) ):
-                        mini_vari = vari
-                        maxi_mean = mean
-                        minica1 = ca1
-                        minica2 = ca2
-                        criterion = caracteristics[c1]
-                        clamini = cla
-                        classifiermini = classifier
-                    if( (c1==len(caracteristics) -1) and (c2 == len(caracteristics)-1) ):
-                        print("\n",classifier,"done")
-        print("\n\n",classifier,"done\n\n")
-        nb+=1
-    print("\n\nClassifier chosen",classifiermini,"Chosen criterion",criterion, "\nParams :", minica1, "and", minica2, "\nMean :",maxi_mean,
-          "\nVariance", mini_vari)
-    df = en.toDataFrame(method,criterion)
+            for c2 in range(c1+1, len(caracteristics)):
+                une_base = ls.LabeledSet(2)
+                ca1 = caracteristics[c1]
+                ca2 = caracteristics[c2]
+                
+                indice = np.random.permutation(lis)
+                indice = indice[:1000]
+                
+                
+                for i in indice :
+                    une_base.addExample([df.iloc[i][ca1], df.iloc[i][ca2]], df.iloc[i]['target'])
+                
+                
+                if nb == 0 :
+                    cla = cl.ClassifierGradientBatch(une_base.getInputDimension(), learningRate)
+                    print("ok cgb")
+                else :
+                    k = cl.KernelPoly()
+                    cla = cl.ClassifierGradientBatchKernel(6, learningRate, k)
+                    
+                if( (c1 == 0) and (c2== 1) and (nb == 0)):
+                    maxi_mean , mini_var = entrainement(100, une_base, cla, 50)
+                    minica1 = ca1
+                    minica2 = ca2
+                    clamini = cla
+                    classifiermini = classifier
+                    
+                mean, var = entrainement(100, une_base, cla, 50)
+                
+                if( (mini_var > var) and (maxi_mean < mean) ):
+                    mini_var = var
+                    maxi_mean = mean
+                    minica1 = ca1
+                    minica2 = ca2
+                    clamini = cla
+                    classifiermini = classifier
+                    
+        
+        print('\n\n',classifier, "done\n\n")
+        nb += 1
+    print("\n\n Classifier chosen", classifiermini, "\nParameters :", minica1,",", minica2, "\nMean ", maxi_mean,
+         "\nVariance :", mini_var)
     une_base = ls.LabeledSet(2)
-    for i in range(1000):
-        une_base.addExample([df.iloc[i][minica1], df.iloc[i][minica2]]
-                    , df.iloc[i]['target'])
-    mean, vari = super_entrainement(25, une_base,clamini, 40)    
+    indice = np.random.permutation(lis)
+    indice = indice[:1000]
+    for i in indice:
+        une_base.addExample([df.iloc[i][minica1], df.iloc[i][minica2]], df.iloc[i]['target'])
+    mean , var = super_entrainement(100, une_base, clamini, 40)
+
 
 
