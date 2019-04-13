@@ -22,18 +22,20 @@ genres_tmdb_dict_inv = {v: k for k, v in genres_tmdb_dict.items()}
 def normalisation(df):
     return (df-df.min())/(df.max()-df.min())
 
-def toTarget(list, method):
+def toTarget(list, method, etalon=""):
     final = []
     if(method=="median"):
         temoin = np.median([list])
     elif(method=="mean"):
         temoin = np.mean([list])
+    elif(method=="vs"):
+        temoin = etalon
     else:
         temoin = 0
     print(method, temoin)
     for inter in list:
         target = -1
-        if inter > temoin:
+        if (method=="vs" and inter == temoin) or (method!="vs" and inter >= temoin):
             target = 1
         final.append(target)
     return final
@@ -45,7 +47,7 @@ class Engineering():
         self.index = []
         print(self.name, "init in process")
 
-    def toDataFrame(self, method="median", axis='', cluster=False, toStack=[]):
+    def toDataFrame(self, method="median", axis='', etalon="", cluster=False, toStack=[]):
         cp = copy.deepcopy(self.df)
         if not cluster:
             if axis == '':
@@ -56,7 +58,7 @@ class Engineering():
             del cp[temoin]
         stack = {}
         for k,v in self.df.items():
-            if not (isinstance(v[0], int) or isinstance(v[0], float)) or k in toStack:
+            if (not(isinstance(v[0], int) or isinstance(v[0], float)) and k in cp.keys()) or k in toStack:
                 print("stack", k)
                 stack[k] = v
                 del cp[k]
@@ -64,7 +66,7 @@ class Engineering():
         for k, v in stack.items():
             result[k] = v
         if not cluster:
-            result["target"] = toTarget(target, method)
+            result["target"] = toTarget(target, method, etalon)
         return result
 
 
@@ -250,7 +252,7 @@ class MoviesEngineering(Engineering):
                 self.df["mean_main_actors"].append(n/total)
             la = base[i]["original_language"]
             nbr = languages[la] / len(languages)
-            self.df["original_language"].append(nbr)
+            self.df["original_language"].append(la)
             if "popularity" not in base[i].keys():
                 self.df["popularity"].append(0)
             else:
