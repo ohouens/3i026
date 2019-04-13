@@ -17,7 +17,7 @@ class Classifier:
         instanciée.
     """
 
-    
+
     def __init__(self, input_dimension):
         """ Constructeur de Classifier
             Argument:
@@ -25,7 +25,7 @@ class Classifier:
             Hypothèse : input_dimension > 0
         """
         raise NotImplementedError("Please Implement this method")
-        
+
     def predict(self, x):
         """ rend la prediction sur x (-1 ou +1)
         """
@@ -34,11 +34,11 @@ class Classifier:
     def train(self, labeledSet):
         """ Permet d'entrainer le modele sur l'ensemble donné
         """
-        
+
         raise NotImplementedError("Please Implement this method")
-    
+
     def accuracy(self, dataset):
-        """ Permet de calculer la qualité du système 
+        """ Permet de calculer la qualité du système
         """
         s = 0
         for i in range(dataset.size()) :
@@ -51,18 +51,18 @@ class ClassifierLineaireRandom(Classifier):
     """ Classe pour représenter un classifieur linéaire aléatoire
         Cette classe hérite de la classe Classifier
     """
-    
+
     #TODO: A Compléter
-    
+
     def __init__(self, input_dimension):
         self.w = np.random.rand(1,input_dimension)
-    
+
     def predict(self, x):
-        return np.vdot(x,self.w) 
-        
+        return np.vdot(x,self.w)
+
     def train(self, labeledSet):
         print("Pas d'apprentissage pour ce classifieur")
-    
+
 # ---------------------------
 class ClassifierKNN(Classifier):
     """ Classe pour représenter un classifieur par K plus proches voisins.
@@ -71,7 +71,7 @@ class ClassifierKNN(Classifier):
     def __init__(self, input_dimension, k):
         self.w = np.random.rand(1,input_dimension)
         self.k = k
-        
+
     def predict(self, x):
         l = []
         for i in range(self.labeledSet.size()) :
@@ -92,8 +92,8 @@ class ClassifierKNN(Classifier):
         if(len(plus) > len(moins)):
             return 1
         return -1
-        
-        
+
+
     def train(self, labeledSet):
         self.labeledSet = labeledSet
 # ---------------------------
@@ -112,7 +112,7 @@ class ClassifierPerceptronKernel(Classifier):
         self.dimension = dimension_kernel
         self.kernel = kernel
         self.loss = 0
-    
+
     def predict(self,x):
         """ rend la prediction sur x (-1 ou +1)
             """
@@ -121,7 +121,7 @@ class ClassifierPerceptronKernel(Classifier):
         if(np.dot(self.w, data) > 0):
             return 1
         return -1
-    
+
     def train(self,labeledSet, show=False):
         """ Permet d'entrainer le modele sur l'ensemble donné
             """
@@ -159,7 +159,7 @@ class ClassifierGradientStochastique(Classifier):
         self.e = learning_rate
         self.w = np.random.rand(1, input_dimension)
         self.dimension = input_dimension
-    
+
     def predict(self,x):
         """ rend la prediction sur x (-1 ou +1)
             """
@@ -167,7 +167,7 @@ class ClassifierGradientStochastique(Classifier):
         if(np.dot(self.w, x) > 0):
             return 1
         return -1
-    
+
     def train(self,labeledSet):
         """ Permet d'entrainer le modele sur l'ensemble donné
             """
@@ -192,7 +192,7 @@ class ClassifierGradientBatch(Classifier):
         self.dimension = input_dimension
         self.gradient = 0
         self.loss = 0
-    
+
     def predict(self,x, show=False):
         """ rend la prediction sur x (-1 ou +1)
             """
@@ -200,7 +200,7 @@ class ClassifierGradientBatch(Classifier):
         if(np.dot(self.w, x) > 0):
             return 1
         return -1
-    
+
     def train(self,labeledSet, show=False):
         """ Permet d'entrainer le modele sur l'ensemble donné
             """
@@ -229,7 +229,7 @@ class ClassifierGradientStochastiqueKernel(Classifier):
         self.w = np.random.rand(1, dimension_kernel)
         self.dimension = dimension_kernel
         self.kernel = kernel
-    
+
     def predict(self,x):
         """ rend la prediction sur x (-1 ou +1)
             """
@@ -238,7 +238,7 @@ class ClassifierGradientStochastiqueKernel(Classifier):
         if(np.dot(self.w, data) > 0):
             return 1
         return -1
-    
+
     def train(self,labeledSet):
         """ Permet d'entrainer le modele sur l'ensemble donné
             """
@@ -266,7 +266,7 @@ class ClassifierGradientBatchKernel(Classifier):
         self.kernel = kernel
         self.gradient = 0
         self.loss = 0
-    
+
     def predict(self,x):
         """ rend la prediction sur x (-1 ou +1)
             """
@@ -275,7 +275,7 @@ class ClassifierGradientBatchKernel(Classifier):
         if(np.dot(self.w, data) > 0):
             return 1
         return -1
-    
+
     def train(self,labeledSet, show=False):
         """ Permet d'entrainer le modele sur l'ensemble donné
             """

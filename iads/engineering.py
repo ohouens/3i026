@@ -45,7 +45,7 @@ class Engineering():
         self.index = []
         print(self.name, "init in process")
 
-    def toDataFrame(self, method="median", axis='', cluster=False):
+    def toDataFrame(self, method="median", axis='', cluster=False, toStack=[]):
         cp = copy.deepcopy(self.df)
         if not cluster:
             if axis == '':
@@ -56,7 +56,8 @@ class Engineering():
             del cp[temoin]
         stack = {}
         for k,v in self.df.items():
-            if not (isinstance(v[0], int) or isinstance(v[0], float)):
+            if not (isinstance(v[0], int) or isinstance(v[0], float)) or k in toStack:
+                print("stack", k)
                 stack[k] = v
                 del cp[k]
         result = normalisation(pd.DataFrame(cp, index=self.index))
