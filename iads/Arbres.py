@@ -1,3 +1,30 @@
+#---- Importation des fichiers 
+
+from . import LabeledSet as ls
+from . import Classifiers as cl
+
+#----- Importations de librairies
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import random
+import math
+
+#-----
+
+
+
+def shannon(ensemble):
+    k = len(ensemble)
+    if k == 1 :
+        return 0
+    somme = 0
+    for i in range(k):
+        if ensemble[i] > 0 :
+            somme += ensemble[i]*math.log(ensemble[i], k)
+    return - somme
+
 def classe_majoritaire(label) :
     cpt_p = 0
     cpt_m = 0
@@ -300,3 +327,78 @@ class ClassifierBaggingTreeOOB(ClassifierBaggingTree):
             foret.train(self.X[i-1])
             self.taux.append(foret.accuracy(self.T[i-1]))
         return np.sum(self.taux)/self.B
+    
+    
+#----- Random Forest
+
+
+def construit_AD_aleatoire(LSet,epsilon,nbatt):
+    result = ArbreBinaire()
+    if(entropie(LSet) < epsilon) :
+        result.ajoute_feuille(classe_majoritaire(LSet))
+    else :
+        res = []
+        for j in range(nbatt):
+            mini_seuil, mini_ent = discretise(LSet, 0)
+            indice = 0
+            for i in range(1, LSet.input_dimension):
+                seuil, e = discretise(LSet, i)
+                if( (e < mini_ent) and (i not in res)) :
+                    mini_ent = e
+                    indice = i
+                    mini_seuil = seuil
+            res.append(indice)
+            inf, sup = divise(LSet, indice, mini_seuil)
+            gain = entropie(LSet) - mini_ent
+            if (gain >= epsilon) :
+                result.ajoute_fils(construit_AD(inf, epsilon), construit_AD(sup, epsilon), indice, mini_seuil)
+            else :
+                result.ajoute_feuille(classe_majoritaire(LSet))
+    return result 
+
+class ArbreDecisionAleatoire (ArbreDecision):
+        def __init__(self,epsilon, nbatt):
+            # valeur seuil d'entropie pour arrêter la construction
+            self.epsilon= epsilon
+            self.racine = None
+            self.nbatt = nbatt
+        
+        def train(self,set):
+            # construction de l'arbre de décision 
+            self.set=set
+            self.racine = construit_AD_aleatoire(set,self.epsilon,self.nbatt)
+            
+            
+            
+class ClassifierRandomForest(ClassifierBaggingTreeOOB):
+    
+    def __init__(self, B, pourcentage, b, seuil):
+        super().__init__(B, pourcentage, b, seuil)
+        self.taux = []
+        self.X = []
+        self.T = []
+        
+    def predict(self, x):
+        plus = 0
+        moins = 0
+        for i in range(self.B) :
+            if (self.ensemble[i].predict(x) > 0):
+                plus += 1
+            else :
+                moins += 1
+        if plus > moins :
+            return 1
+        return -1
+
+    def train(self, labeledSet, epsilon=0) :
+        for i in range(self.B):
+            a = int(labeledSet.size()*self.pourcentage)
+            e  = echantillonLS(labeledSet,a, self.b)
+            self.T.append(labeledSet)
+            self.X.append(e)
+            nbatt = np.random.randint(1, labeledSet.input_dimension+1)
+            decision = ArbreDecisionAleatoire(epsilon, nbatt)
+            decision.train(e)
+            self.ensemble.append(decision)
+            
+
