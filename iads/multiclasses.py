@@ -26,9 +26,7 @@ class ClassifierMultiClasses():
     def predict(claId, x):
         k = cl.KernelPoly()
         y = k.transform(x)
-        if(np.dot(self.classifiers[claId].w, y) > 0):
-            return 1
-        return -1
+        return np.dot(self.classifiers[claId].w, y) > 0
 
     def predScores(movieId, criterion1, criterion2):
         """ Rend l'id du meilleur classifier dans la liste de classifiers de la classe"""
