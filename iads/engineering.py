@@ -79,6 +79,7 @@ class UtilsEngineering(Engineering):
         self.actorsMeanMovies = {}
         self.plays = {}
         self.languages = {}
+        self.genres = genres_tmdb_dict
         #introduire complements
         acteurs = complement
         #operation de base 1
@@ -259,4 +260,50 @@ class MoviesEngineering(Engineering):
                 self.df["popularity"].append(base[i]["popularity"])
             self.df["note"].append(base[i]["vote_average"])
             self.index.append(base[i]["title"])
+        print(self.name,  "init successful")
+        
+class MoviesGenresEngineering(Engineering):
+    def __init__(self, base, complement):
+        super().__init__("Movies")
+        self.df["vote_count"] = []
+        self.df["mean_main_actors"] = []
+        self.df["original_language"] = []
+        self.df["popularity"] = []
+        self.df["note"] = []
+        self.df["genre_id"] = []
+        #on introduit les complements
+        plays, actorsMeanMovies, languages = complement
+        #on effectue les operations de Base
+        for i in range(len(base)):
+            title = base[i]["original_title"]
+            
+            acteurs = plays[title]
+            acteurs = acteurs[0:5]
+            genres_id = base[i]["genre_ids"]
+            n = 0
+            total = 0
+            genres = []
+            for g in genres_id:
+                genres.append(genres_tmdb_dict[g])
+            for g in genres:
+                for act in acteurs:
+                    n += actorsMeanMovies[act][g]
+                    total += 1
+            la = base[i]["original_language"]
+            nbr = languages[la] / len(languages)
+            
+            for g in genres_id :
+                self.df["original_language"].append(nbr)
+                self.df["vote_count"].append(base[i]["vote_count"])
+                if total == 0:
+                    self.df["mean_main_actors"].append(0)
+                else:
+                    self.df["mean_main_actors"].append(n/total)
+                if "popularity" not in base[i].keys():
+                    self.df["popularity"].append(0)
+                else:
+                    self.df["popularity"].append(base[i]["popularity"])
+                self.df["note"].append(base[i]["vote_average"])
+                self.df["genre_id"].append(g)
+                self.index.append(base[i]["title"])
         print(self.name,  "init successful")
