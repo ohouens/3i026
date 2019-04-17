@@ -10,7 +10,10 @@ class MultiClassClassifier():
         max = 0
         label = None
         for k,v in self.classifiers.items():
-            if k not in without and v.score(X) > 0 and v.score(X) > max:
-                label = k
-                max = v.score(X)
+            if k not in without:
+                if v.score(X) > 0 and v.score(X) > max:
+                    label = k
+                    max = v.score(X)
+            else:
+                print("without", k)
         return label
