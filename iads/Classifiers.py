@@ -93,6 +93,24 @@ class ClassifierKNN(Classifier):
             return 1
         return -1
 
+    def score(self, x):
+        l = []
+        for i in range(self.labeledSet.size()) :
+            l.append(np.linalg.norm(x - self.labeledSet.getX(i)))
+        t = np.argsort(np.array(l))
+        tr = t.tolist()
+        #print(t)
+        #print(tr)
+        plus = []
+        moins = []
+        for i in range(self.k):
+            #print(tr[i])
+            #print(l[tr[i]])
+            if(self.labeledSet.getY(tr[i]) > 0):
+                plus.append(1)
+            else:
+                moins.append(-1)
+        return np.sum([plus])+np.sum([moin])
 
     def train(self, labeledSet):
         self.labeledSet = labeledSet
@@ -121,6 +139,10 @@ class ClassifierPerceptronKernel(Classifier):
         if(np.dot(self.w, data) > 0):
             return 1
         return -1
+
+    def score(self, x):
+        data = self.kernel.transform(x)
+        return np.dot(self.w, data)
 
     def train(self,labeledSet, show=False):
         """ Permet d'entrainer le modele sur l'ensemble donné
@@ -168,6 +190,9 @@ class ClassifierGradientStochastique(Classifier):
             return 1
         return -1
 
+    def score(self, x):
+        return np.dot(self.w, x)
+
     def train(self,labeledSet):
         """ Permet d'entrainer le modele sur l'ensemble donné
             """
@@ -200,6 +225,9 @@ class ClassifierGradientBatch(Classifier):
         if(np.dot(self.w, x) > 0):
             return 1
         return -1
+
+    def score(self, x):
+        return np.dot(self.w, x)
 
     def train(self,labeledSet, show=False):
         """ Permet d'entrainer le modele sur l'ensemble donné
@@ -239,6 +267,10 @@ class ClassifierGradientStochastiqueKernel(Classifier):
             return 1
         return -1
 
+    def score(self, x):
+        data = self.kernel.transform(x)
+        return np.dot(self.w, data)
+
     def train(self,labeledSet):
         """ Permet d'entrainer le modele sur l'ensemble donné
             """
@@ -275,6 +307,10 @@ class ClassifierGradientBatchKernel(Classifier):
         if(np.dot(self.w, data) > 0):
             return 1
         return -1
+
+    def score(self, x):
+        data = self.kernel.transform(x)
+        return np.dot(self.w, data)
 
     def train(self,labeledSet, show=False):
         """ Permet d'entrainer le modele sur l'ensemble donné
