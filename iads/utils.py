@@ -79,7 +79,7 @@ def entrainement(n, label, perceptron, pourcentage=60, show=False) :
     meanList = []
     for i in range(n) :
         train, test = split(label, pourcentage)
-        perceptron.train(train) 
+        perceptron.train(train)
         acc = perceptron.accuracy(test)
         mean += acc
         if(show):
@@ -94,10 +94,6 @@ def entrainement(n, label, perceptron, pourcentage=60, show=False) :
 
     return (mean, vari)
 
-
-
-
-
 # Super_entrainement
 
 def super_entrainement(n, label, perceptron, pourcentage=60, show=False) :
@@ -107,7 +103,7 @@ def super_entrainement(n, label, perceptron, pourcentage=60, show=False) :
     meanList = []
     for i in range(n) :
         train, test = split(label, pourcentage)
-        perceptron.train(train) 
+        perceptron.train(train)
         acc = perceptron.accuracy(test)
         mean += acc
         if(show):
@@ -229,7 +225,7 @@ def bestClassifier(en, method, caracteristics,learningRate, criterion):
     mean, vari = super_entrainement(25, une_base,clamini, 40)
 
 
-    
+
 def bestRegressor(eng, method, caracteristics, learningRate, criterion):
     nb = 0
     while(nb < 2):
@@ -238,7 +234,7 @@ def bestRegressor(eng, method, caracteristics, learningRate, criterion):
         else :
             classifier = "Classifier Gradient Batch Kernel"
         print("init", classifier, "\n\n")
-        
+
         df = eng.toDataFrame(method, criterion)
         lis = np.arange(len(df))
         for c1 in range(len(caracteristics)):
@@ -246,31 +242,31 @@ def bestRegressor(eng, method, caracteristics, learningRate, criterion):
                 une_base = ls.LabeledSet(2)
                 ca1 = caracteristics[c1]
                 ca2 = caracteristics[c2]
-                
+
                 indice = np.random.permutation(lis)
                 indice = indice[:1000]
-                
-                
+
+
                 for i in indice :
                     une_base.addExample([df.iloc[i][ca1], df.iloc[i][ca2]], df.iloc[i]['target'])
-                
-                
+
+
                 if nb == 0 :
                     cla = cl.ClassifierGradientBatch(une_base.getInputDimension(), learningRate)
                     print("ok cgb")
                 else :
                     k = cl.KernelPoly()
                     cla = cl.ClassifierGradientBatchKernel(6, learningRate, k)
-                    
+
                 if( (c1 == 0) and (c2== 1) and (nb == 0)):
                     maxi_mean , mini_var = entrainement(100, une_base, cla, 50)
                     minica1 = ca1
                     minica2 = ca2
                     clamini = cla
                     classifiermini = classifier
-                    
+
                 mean, var = entrainement(100, une_base, cla, 50)
-                
+
                 if( (mini_var > var) and (maxi_mean < mean) ):
                     mini_var = var
                     maxi_mean = mean
@@ -278,8 +274,8 @@ def bestRegressor(eng, method, caracteristics, learningRate, criterion):
                     minica2 = ca2
                     clamini = cla
                     classifiermini = classifier
-                    
-        
+
+
         print('\n\n',classifier, "done\n\n")
         nb += 1
     print("\n\n Classifier chosen", classifiermini, "\nParameters :", minica1,",", minica2, "\nMean ", maxi_mean,
@@ -290,6 +286,3 @@ def bestRegressor(eng, method, caracteristics, learningRate, criterion):
     for i in indice:
         une_base.addExample([df.iloc[i][minica1], df.iloc[i][minica2]], df.iloc[i]['target'])
     mean , var = super_entrainement(100, une_base, clamini, 40)
-
-
-
