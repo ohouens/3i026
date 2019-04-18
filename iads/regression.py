@@ -1,3 +1,6 @@
+import numpy as np
+import math
+
 class Regression():
     """ Classe pour représenter un regresseur
         Attention: cette classe est une classe abstraite, elle ne peut pas être
@@ -35,26 +38,26 @@ class GradientBatch(Regression):
     def __init__(self, input_dimension, learning_rate):
         self.dimension = input_dimension
         self.e = learning_rate
-        self.cost = 0
         self.theta = 0
         self.tH = []
         self.cH = []
 
-    def cost(theta, X, y):
+    def cost(self, X, y):
         m = len(y)
-        y_hat = np.dot(X, theta)
-        cost = (1/2*m)*np.sum(np.square(y_hat-y))
+        y_hat = np.dot(X, self.theta)
+        return (1/2*m)*np.sum(np.square(y_hat-y))
 
     def train(self, labeledSet, verbose=False):
         indice = np.arange(labeledSet.size())
         temoin = np.random.permutation(indice)
+        m = len(temoin)
         for i in temoin:
             y_hat = np.dot(labeledSet.getX(i), self.theta)
             self.theta = self.theta-(1/m)*self.e*np.dot(labeledSet.getX(i).T ,y_hat-labeledSet.getY(i))
             self.tH.append(self.theta)
-            self.cH.append(self.cost(self.theta), labeledSet.getX(i), labeledSet.getY(i))
+            self.cH.append(self.cost(labeledSet.getX(i), labeledSet.getY(i)))
         if(verbose):
-            print(loss)
+            print(self.cH[-1])
             print(self.theta)
 
     def predict(self, x):
