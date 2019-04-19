@@ -47,9 +47,9 @@ class Engineering():
         self.index = []
         print(self.name, "init in process")
 
-    def toDataFrame(self, method="median", axis='', etalon="", cluster=False, toStack=[]):
+    def toDataFrame(self, method="median", axis='', etalon="", withTarget=True, toStack=[]):
         cp = copy.deepcopy(self.df)
-        if not cluster:
+        if withTarget:
             if axis == '':
                 temoin = list(cp)[-1]
             else:
@@ -65,7 +65,7 @@ class Engineering():
         result = normalisation(pd.DataFrame(cp, index=self.index))
         for k, v in stack.items():
             result[k] = v
-        if not cluster:
+        if withTarget:
             result["target"] = toTarget(target, method, etalon)
         return result
 
@@ -261,7 +261,7 @@ class MoviesEngineering(Engineering):
             self.df["note"].append(base[i]["vote_average"])
             self.index.append(base[i]["title"])
         print(self.name,  "init successful")
-        
+
 class MoviesGenresEngineering(Engineering):
     def __init__(self, base, complement):
         super().__init__("Movies")
@@ -276,7 +276,7 @@ class MoviesGenresEngineering(Engineering):
         #on effectue les operations de Base
         for i in range(len(base)):
             title = base[i]["original_title"]
-            
+
             acteurs = plays[title]
             acteurs = acteurs[0:5]
             genres_id = base[i]["genre_ids"]
@@ -291,7 +291,7 @@ class MoviesGenresEngineering(Engineering):
                     total += 1
             la = base[i]["original_language"]
             nbr = languages[la] / len(languages)
-            
+
             for g in genres_id :
                 self.df["original_language"].append(nbr)
                 self.df["vote_count"].append(base[i]["vote_count"])
