@@ -77,4 +77,4 @@ class GradientBatch(Regression):
             plt.show()
 
     def predict(self, X):
-        return self.theta[0] + self.theta[1]*X
+        return np.amax(self.theta[0] + self.theta[1]*X) 
