@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 class Regression():
     """ Classe pour représenter un regresseur
@@ -7,13 +8,13 @@ class Regression():
         instanciée.
     """
 
-    def __init__(self, input_dimension):
+    def __init__(self, epsilon=0.5):
         """ Constructeur de Regresseur
             Argument:
                 - intput_dimension (int) : dimension d'entrée des exemples
             Hypothèse : input_dimension > 0
         """
-        raise NotImplementedError("Please Implement this method")
+        self.epsilon = epsilon
 
     def predict(self, x):
         """ rend la prediction sur x
@@ -25,40 +26,55 @@ class Regression():
         """
         raise NotImplementedError("Please implement this method")
 
-    def accuracy(self, dataset, epsilon=0.5):
+    def accuracy(self, dataset):
         """ Permet de calculer la qualité du système
         """
         s = 0
         for i in range(dataset.size()) :
-            if self.predict(dataset.getX(i)) >=  dataset.getY(i)-epsilon and self.predict(dataset.getX(i)) < dataset.getY(i)+epsilon :
+            if self.predict(dataset.getX(i)) >=  dataset.getY(i)-self.epsilon and self.predict(dataset.getX(i)) < dataset.getY(i)+self.epsilon :
                 s += 1
         return (s *1.0 / dataset.size()) *100
 
 class GradientBatch(Regression):
-    def __init__(self, input_dimension, learning_rate):
-        self.dimension = input_dimension
-        self.e = learning_rate
-        self.theta = 0
-        self.tH = []
-        self.cH = []
+    def __init__(self, learning_rate, epsilon=0.5):
+        super().__init__(epsilon)
+        self.alpha = learning_rate
+        self.theta = np.random.randn(2, 1)
+
+    def reshape(self, X):
+        return np.c_[np.ones((len(X), 1)), X]
 
     def cost(self, X, y):
         m = len(y)
-        y_hat = np.dot(X, self.theta)
+        y_hat = np.dot(self.reshape(X), self.theta)
         return (1/2*m)*np.sum(np.square(y_hat-y))
 
     def train(self, labeledSet, verbose=False):
+        m = labeledSet.size()
+        self.tH = np.zeros((m, 2))
+        self.cH = np.zeros(m)
         indice = np.arange(labeledSet.size())
-        temoin = np.random.permutation(indice)
-        m = len(temoin)
-        for i in temoin:
-            y_hat = np.dot(labeledSet.getX(i), self.theta)
-            self.theta = self.theta-(1/m)*self.e*np.dot(labeledSet.getX(i).T ,y_hat-labeledSet.getY(i))
-            self.tH.append(self.theta)
-            self.cH.append(self.cost(labeledSet.getX(i), labeledSet.getY(i)))
+        for i in indice:
+            y_hat = np.dot(self.reshape(labeledSet.getX(i)), self.theta)
+            self.theta = self.theta - (1/m) * self.alpha * labeledSet.getX(i).T.dot(y_hat-labeledSet.getY(i))
+            self.tH[i,:] = self.theta.T
+            self.cH[i] = self.cost(labeledSet.getX(i), labeledSet.getY(i))
         if(verbose):
+            plt.plot(self.cH)
+            plt.xlabel('Iterations')
+            plt.ylabel('J(Theta)')
+            plt.title('Cost of Theta throught iterations')
+            plt.legend()
+            plt.show()
             print(self.cH[-1])
             print(self.theta)
+            plt.plot([self.tH[i][0] for i in range(len(self.tH))], label="Theta 0")
+            plt.plot([self.tH[i][1] for i in range(len(self.tH))], label="Theta 1")
+            plt.xlabel('Iterations')
+            plt.ylabel('Theta')
+            plt.title('Values of Theta throught iterations')
+            plt.legend()
+            plt.show()
 
-    def predict(self, x):
-        pass
+    def predict(self, X):
+        return self.theta[0] + self.theta[1]*X
