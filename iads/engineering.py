@@ -80,8 +80,10 @@ class UtilsEngineering(Engineering):
         self.plays = {}
         self.languages = {}
         self.genres = genres_tmdb_dict
+        self.prop_women_actors = []
+        self.prop_women_crew = []
         #introduire complements
-        acteurs = complement
+        acteurs, equipes = complement
         #operation de base 1
         for lista in acteurs:
             for a in lista:
@@ -89,7 +91,7 @@ class UtilsEngineering(Engineering):
                 res = self.actors.setdefault(a['name'], len(self.actors))
                 if res == len(self.actors)-1:
                     self.actorsReversed[len(self.actors)-1] = a['name']
-        #operation de base 2
+        #on affecte à chaque acteur le nombre de films par categorie dans lequel il a joué et ce pour chaque catégorie
         for i in self.actors.keys():
             self.actorsPlayedMovies[i] = {}
             for k in genres_tmdb_dict.keys() :
@@ -103,13 +105,13 @@ class UtilsEngineering(Engineering):
                 for id in desc_film["genre_ids"] :
                     genre = genres_tmdb_dict[id]
                     self.actorsPlayedMovies[actorName][genre] += 1
-        #operation de base 3
+        #on affecte a chaque le nom des acteurs
         for i_film in range(len(base)):
             name = base[i_film]["original_title"]
             self.plays[name] = []
             for a in acteurs[i_film] :
                 self.plays[name].append(a["name"])
-        #operation de base 4
+        #on affecte a chaque acteur la moyenne par catégorie dans lequel l'acteur a joué et ce pour chaque catégorie.
         ke_act = self.actors.keys()
         ke_gen = genres_tmdb_dict.keys()
         for i in ke_act :
@@ -132,7 +134,7 @@ class UtilsEngineering(Engineering):
             for k in ke_gen :
                 if(self.actorsMeanMovies[act][k] > 0):
                     self.actorsMeanMovies[act][k] = (self.actorsMeanMovies[act][k] / self.actorsPlayedMovies[act][k])
-        #operation de base 5
+        #on trouve toutes les langues originales des films
         language = []
         cpt = 0
         for fi in base :
@@ -141,6 +143,30 @@ class UtilsEngineering(Engineering):
                 language.append(la)
                 self.languages[la] = cpt
                 cpt +=1
+        #on calcule la proportion d'actrices par films
+        for j in range(len(acteurs)) :
+            f = 0
+            total = 0
+            for i in range(len(acteurs[j])):
+                if acteurs[j][i]['gender'] == 1 :
+                    f += 1
+                total+= 1
+            if total != 0 :
+                self.prop_women_actors.append(f/total)
+            else :
+                self.prop_women_actors.append(0)
+        #on calcule la proportion de femmes dans l'equipe (crew) par film
+        for j in range(len(equipes)) :
+            f = 0
+            total = 0
+            for i in range(len(equipes[j])):
+                if equipes[j][i]['gender'] == 1 :
+                    f += 1
+                total+= 1
+            if total != 0 :
+                self.prop_women_crew.append(f/total)
+            else :
+                self.prop_women_crew.append(0)
         print(self.name, "init successful")
 
     def toDataFrame(self, method):
@@ -221,6 +247,8 @@ class GenresClusterEngineering(Engineering):
             self.index.append(base[i]["original_title"])
         print(self.name,  "init successful")
 
+
+
 class MoviesEngineering(Engineering):
     def __init__(self, base, complement):
         super().__init__("Movies")
@@ -229,11 +257,18 @@ class MoviesEngineering(Engineering):
         self.df["original_language"] = []
         self.df["popularity"] = []
         self.df["note"] = []
+        self.df['month_release'] = []
+        self.df['nb_producers'] = []
+        self.df['nb_words_overview'] = []
+        self.df['prop_women_actors'] = []
+        self.df['prop_women_crew'] = []
+        #la base correspond a la base films
         #on introduit les complements
-        plays, actorsMeanMovies, languages = complement
+        plays, actorsMeanMovies, languages, equipes, prop_women_actor, prop_women_crew = complement
         #on effectue les operations de Base
         for i in range(len(base)):
             title = base[i]["original_title"]
+            #nombre de vote total
             self.df["vote_count"].append(base[i]["vote_count"])
             acteurs = plays[title]
             acteurs = acteurs[0:5]
@@ -243,6 +278,7 @@ class MoviesEngineering(Engineering):
             genres = []
             for g in genres_id:
                 genres.append(genres_tmdb_dict[g])
+
             for g in genres:
                 for act in acteurs:
                     n += actorsMeanMovies[act][g]
@@ -253,14 +289,35 @@ class MoviesEngineering(Engineering):
                 self.df["mean_main_actors"].append(n/total)
             la = base[i]["original_language"]
             nbr = languages[la] / len(languages)
+            #on donne a la langue une valeur numérique
             self.df["original_language"].append(la)
+            #on attribue la popularité
             if "popularity" not in base[i].keys():
                 self.df["popularity"].append(0)
             else:
                 self.df["popularity"].append(base[i]["popularity"])
             self.df["note"].append(base[i]["vote_average"])
+            #on ajoute le nombre de mots de la description
+            self.df['nb_words_overview'].append(len(base[i]['overview'].split(' ')))
+            #on ajoute le mois de sortie
+            ke = list(base[i].keys())
+            if 'release_date' not in ke or len(base[i]['release_date']) == 0 :
+                self.df['month_release'].append(-1)
+            else :
+                self.df['month_release'].append(int(base[i]['release_date'].split('-')[1]))
+            #on ajoute le nombre de producteurs et de producteurs exécutifs
+            p  = 0
+            for c in equipes[i] :
+                if c['job'] == 'Producer' or c['job'] == 'Executive Producer':
+                    p+=1
+            self.df['nb_producers'].append(p)
+            #on ajoute la proportion de femmes parmi les acteurs
+            self.df['prop_women_actors'].append(prop_women_actor[i])
+            #on ajoute la proportion de femmes parmi l'equipe
+            self.df['prop_women_crew'].append(prop_women_crew[i])
             self.index.append(base[i]["title"])
         print(self.name,  "init successful")
+
 
 class MoviesGenresEngineering(Engineering):
     def __init__(self, base, complement):
@@ -276,7 +333,7 @@ class MoviesGenresEngineering(Engineering):
         #on effectue les operations de Base
         for i in range(len(base)):
             title = base[i]["original_title"]
-
+            #on calcule la note moyenne des notes moyennes des 5 premiers acteurs par categories
             acteurs = plays[title]
             acteurs = acteurs[0:5]
             genres_id = base[i]["genre_ids"]
@@ -291,19 +348,25 @@ class MoviesGenresEngineering(Engineering):
                     total += 1
             la = base[i]["original_language"]
             nbr = languages[la] / len(languages)
-
+            #pour chaque genre on va rajouter une ligne dans le dataframe avec comme seul attribut qui diffère le genre
             for g in genres_id :
+                #ajout de langue original
                 self.df["original_language"].append(nbr)
+                #ajout vote total
                 self.df["vote_count"].append(base[i]["vote_count"])
+                #ajout de la note moyenne des note moyenne des acteurs
                 if total == 0:
                     self.df["mean_main_actors"].append(0)
                 else:
                     self.df["mean_main_actors"].append(n/total)
+                #ajout de la popularit&
                 if "popularity" not in base[i].keys():
                     self.df["popularity"].append(0)
                 else:
                     self.df["popularity"].append(base[i]["popularity"])
+                #ajout de la note
                 self.df["note"].append(base[i]["vote_average"])
+                #ajout de l'id du genre
                 self.df["genre_id"].append(g)
                 self.index.append(base[i]["title"])
         print(self.name,  "init successful")
